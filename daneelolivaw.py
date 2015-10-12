@@ -7,7 +7,6 @@
 #
 # Add an HTML / text format output
 # Add Git Readme file
-# Remove global vars
 # Comments
 
 #
@@ -32,9 +31,8 @@ id = 0
 #
 # Programm
 #
-def main() :
+def main(recordsbyid) :
 	global data
-	global recordsbyid
 	logging.basicConfig(filename = logFile, filemode = 'w', format = '%(asctime)s  |  %(levelname)s  |  %(message)s', datefmt = '%m/%d/%Y %I:%M:%S %p', level = logLevel)
 	logging.info('Start')
 	logging.info('Open quality control sheet')
@@ -44,14 +42,13 @@ def main() :
 			t = [l for l in spamreader]
 			recordsbyid = dict(zip(map(operator.itemgetter(0), t), t))
 	# Start inventory on the main folder
-	inventory(inventoryPath)
+	inventory(inventoryPath, recordsbyid)
 	writeFile(data)
 	logging.info('End')
 
-def inventory(path) :
+def inventory(path, recordsbyid) :
 	global id
 	global data
-	global recordsbyid
 	for file in os.listdir(path) :
 		completePath = os.path.join(path, file)
 		if os.path.isfile(completePath) :
@@ -79,7 +76,7 @@ def inventory(path) :
 			else :
 				logging.error('File not conforme : ' + path + file)
 		else :
-			inventory(completePath)
+			inventory(completePath, recordsbyid)
 
 def writeFile(data) :
 	# Write result into file
@@ -113,4 +110,4 @@ if __name__ == '__main__':
 			# Check that data folder exists, else create it
 			if not os.path.exists(dataFolder):
 				os.makedirs(dataFolder)
-			main()
+			main(recordsbyid)
