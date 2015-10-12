@@ -4,10 +4,10 @@
 #
 # Todo
 #
-# Add "numéro d'inventaire" column and data
 # Add "Date" min and max column and data
 # Date format : AAAA-MM-JJ or AAAA-MM or AAAA
 # Add an HTML / text format output
+# Put source folders and files as argument
 
 #
 # Libs
@@ -17,7 +17,7 @@ import codecs, csv, logging, operator, os
 #
 # Config
 #
-rootPath = "/Users/anne.lhote/Documents/beQuali/meta_documents/cdsp_bq_sp5/sp5-ol"
+rootPath = "/Users/anne.lhote/Documents/beQuali/daneelolivaw/cdsp_bq_sp5/sp5-ol"
 pathSeparator = "/"
 logFolder = 'log'
 logFile = logFolder + pathSeparator + 'daneelolivaw.log'
@@ -25,9 +25,10 @@ logLevel = logging.DEBUG
 dataFolder = 'data'
 dataOutput = dataFolder + pathSeparator + 'daneelolivaw.csv'
 outputSeparator = '\t'
-data = 'chemin' + outputSeparator + 'fichier' + outputSeparator + 'fonds' + outputSeparator + 'sous-fonds' + outputSeparator + 'dossier' + outputSeparator + 'sous-dossier' + outputSeparator + 'langue' + outputSeparator + 'sujet' + outputSeparator + 'article' + outputSeparator + 'n° (série)' + outputSeparator + 'extension' + '\n'
-controlSheet = '/Users/anne.lhote/www/beQuali/meta_documents/data/bordereau_controle_qualite_lot01_michelat.csv'
+data = 'N° d\'inventaire' + outputSeparator + 'Chemin' + outputSeparator + 'Fichier' + outputSeparator + 'Fonds' + outputSeparator + 'Sous-fonds' + outputSeparator + 'Dossier' + outputSeparator + 'Sous-dossier' + outputSeparator + 'Langue' + outputSeparator + 'Sujet' + outputSeparator + 'Article' + outputSeparator + 'N° (série)' + outputSeparator + 'Extension' + '\n'
+controlSheet = '/Users/anne.lhote/www/beQuali/daneelolivaw/data/bordereau_controle_qualite_lot01_michelat.csv'
 recordsbyid = {}
+id = 0
 
 #
 # Programm
@@ -49,12 +50,14 @@ def main() :
 	logging.info('End')
 
 def inventory(path) :
+	global id
 	global data
 	global recordsbyid
 	for file in os.listdir(path) :
 		completePath = os.path.join(path, file)
 		if os.path.isfile(completePath) :
 			if len(file.split('_')) >= 9 :
+				id += 1
 				collection = '_'.join(file.split('_')[0:3])
 				subcollection = file.split('_')[3]
 				folder = file.split('_')[4]
@@ -67,11 +70,11 @@ def inventory(path) :
 				else :
 					rank = ''
 				extension = file.split('.')[-1]
-				try :
-					print recordsbyid['_'.join(file.split('_')[:9]).split('.')[0]]
-				except KeyError :
-					logging.info('Key error : the file ' + file + ' doesn\'t exist in the control sheet.')
-				data += path + outputSeparator + file + outputSeparator + collection + outputSeparator + subcollection + outputSeparator + folder + outputSeparator + subfolder + outputSeparator + lang + outputSeparator + subject + outputSeparator + article + outputSeparator + rank + outputSeparator + extension + '\n'
+				# try :
+					# print recordsbyid['_'.join(file.split('_')[:9]).split('.')[0]]
+				# except KeyError :
+				# 	logging.info('Key error : the file ' + file + ' doesn\'t exist in the control sheet.')
+				data += "%04d" % (id) + outputSeparator + path + outputSeparator + file + outputSeparator + collection + outputSeparator + subcollection + outputSeparator + folder + outputSeparator + subfolder + outputSeparator + lang + outputSeparator + subject + outputSeparator + article + outputSeparator + rank + outputSeparator + extension + '\n'
 			else :
 				logging.error('File not conforme : ' + path + file)
 		else :
