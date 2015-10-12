@@ -32,13 +32,12 @@ id = 0
 #
 # Programm
 #
-logging.basicConfig(filename = logFile, filemode = 'w', format = '%(asctime)s  |  %(levelname)s  |  %(message)s', datefmt = '%m/%d/%Y %I:%M:%S %p', level = logLevel)
-logging.info('Start')
-
 def main() :
 	global data
 	global recordsbyid
-	logging.info('Read control sheet')
+	logging.basicConfig(filename = logFile, filemode = 'w', format = '%(asctime)s  |  %(levelname)s  |  %(message)s', datefmt = '%m/%d/%Y %I:%M:%S %p', level = logLevel)
+	logging.info('Start')
+	logging.info('Open quality control sheet')
 	if hasControlSheet :
 		with open(controlSheet, 'rb') as csvfile:
 			spamreader = csv.reader(csvfile, delimiter=',', quotechar='"')
@@ -108,4 +107,10 @@ if __name__ == '__main__':
 				controlSheet = sys.argv[2]
 			else :
 				hasControlSheet = 0
+			# Check that log folder exists, else create it
+			if not os.path.exists(logFolder):
+				os.makedirs(logFolder)
+			# Check that data folder exists, else create it
+			if not os.path.exists(dataFolder):
+				os.makedirs(dataFolder)
 			main()
