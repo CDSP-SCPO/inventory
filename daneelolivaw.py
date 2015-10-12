@@ -1,24 +1,24 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+# Execution example : python daneelolivaw.py /path/to/folder/to/inventory /path/to/the/quality/control/sheet.csv
 
 #
 # Todo
 #
-# Add "Date" min and max column and data
-# Date format : AAAA-MM-JJ or AAAA-MM or AAAA
 # Add an HTML / text format output
-# Put source folders and files as argument
+# Add Git Readme file
+# Remove global vars
+# Comments
 
 #
 # Libs
 #
-import codecs, csv, logging, operator, os
+import codecs, csv, logging, operator, os, sys
 
 #
 # Config
 #
-rootPath = "/Users/anne.lhote/Documents/beQuali/daneelolivaw/cdsp_bq_sp5/sp5-ol"
-pathSeparator = "/"
+pathSeparator = '/'
 logFolder = 'log'
 logFile = logFolder + pathSeparator + 'daneelolivaw.log'
 logLevel = logging.DEBUG
@@ -26,7 +26,6 @@ dataFolder = 'data'
 dataOutput = dataFolder + pathSeparator + 'daneelolivaw.csv'
 outputSeparator = '\t'
 data = 'N° d\'inventaire' + outputSeparator + 'Chemin' + outputSeparator + 'Fichier' + outputSeparator + 'Fonds' + outputSeparator + 'Sous-fonds' + outputSeparator + 'Dossier' + outputSeparator + 'Sous-dossier' + outputSeparator + 'Langue' + outputSeparator + 'Sujet' + outputSeparator + 'Article' + outputSeparator + 'N° (série)' + outputSeparator + 'Extension' + '\n'
-controlSheet = '/Users/anne.lhote/www/beQuali/daneelolivaw/data/bordereau_controle_qualite_lot01_michelat.csv'
 recordsbyid = {}
 id = 0
 
@@ -40,12 +39,13 @@ def main() :
 	global data
 	global recordsbyid
 	logging.info('Read control sheet')
-	with open(controlSheet, 'rb') as csvfile:
-		spamreader = csv.reader(csvfile, delimiter=',', quotechar='"')
-		# UTF-8 pb
-		t = [l for l in spamreader]
-		recordsbyid = dict(zip(map(operator.itemgetter(0), t), t))
-	inventory(rootPath)
+	if hasControlSheet :
+		with open(controlSheet, 'rb') as csvfile:
+			spamreader = csv.reader(csvfile, delimiter=',', quotechar='"')
+			t = [l for l in spamreader]
+			recordsbyid = dict(zip(map(operator.itemgetter(0), t), t))
+	# Start inventory on the main folder
+	inventory(inventoryPath)
 	writeFile(data)
 	logging.info('End')
 
@@ -70,10 +70,12 @@ def inventory(path) :
 				else :
 					rank = ''
 				extension = file.split('.')[-1]
-				# try :
-					# print recordsbyid['_'.join(file.split('_')[:9]).split('.')[0]]
-				# except KeyError :
-				# 	logging.info('Key error : the file ' + file + ' doesn\'t exist in the control sheet.')
+				if hasControlSheet :
+					# Check if the file was listed in the quality control sheet
+					try :
+						recordsbyid['_'.join(file.split('_')[:9]).split('.')[0]]
+					except KeyError :
+						logging.info('Key error : the file ' + path + pathSeparator + file + ' doesn\'t exist in the quality control sheet.')
 				data += "%04d" % (id) + outputSeparator + path + outputSeparator + file + outputSeparator + collection + outputSeparator + subcollection + outputSeparator + folder + outputSeparator + subfolder + outputSeparator + lang + outputSeparator + subject + outputSeparator + article + outputSeparator + rank + outputSeparator + extension + '\n'
 			else :
 				logging.error('File not conforme : ' + path + file)
@@ -90,4 +92,20 @@ def writeFile(data) :
 # Main
 #
 if __name__ == '__main__':
-	main()
+	# Check that the command line has at least one argument
+	if len(sys.argv) < 2 :
+		print 'Arguments error'
+		print 'Correct usage : ' + sys.argv[0] + ' "/path/to/folder/to/inventory" "/path/to/the/quality/control/sheet.csv"'
+		print 'The quality control sheet is optional and has to be a csv file'
+	else :
+		# Check that if the command line has a second argument, it is a csv file
+		if len(sys.argv) >= 3 and sys.argv[2][-4:] != '.csv' :
+			print 'The second argument ie. the quality control sheet has to be a csv file'
+		else :
+			inventoryPath = sys.argv[1]
+			if len(sys.argv) >= 3 :
+				hasControlSheet = 1
+				controlSheet = sys.argv[2]
+			else :
+				hasControlSheet = 0
+			main()
