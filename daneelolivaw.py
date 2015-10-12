@@ -3,11 +3,6 @@
 # Execution example : python daneelolivaw.py path/to/folder/to/inventory path/to/the/quality/control/sheet.csv
 
 #
-# Todo
-#
-# Add an HTML / text format output
-
-#
 # Libs
 #
 import codecs, csv, logging, operator, os, sys
