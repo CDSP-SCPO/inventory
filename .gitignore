@@ -6,9 +6,9 @@
 #
 # Data files
 #
-data/*
+data
 
 #
 # Log files
 #
-log/*
+log
