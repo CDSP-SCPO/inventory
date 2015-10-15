@@ -16,11 +16,6 @@ The second argument ie. the quality control sheet is optional and has to be a cs
 `python daneelolivaw.py path/to/folder/to/inventory path/to/the/quality/control/sheet.csv`
 
 
-## ToDo
-
-Add an HTML output
-
-
 ## Credits
 
 [Sciences Po - CDSP](http://cdsp.sciences-po.fr/)
