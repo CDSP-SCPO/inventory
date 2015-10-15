@@ -10,14 +10,15 @@ import codecs, csv, logging, operator, os, sys
 #
 # Config
 #
-pathSeparator = '/'
-logFolder = 'log'
-logFile = logFolder + pathSeparator + 'daneelolivaw.log'
-logLevel = logging.DEBUG
-dataFolder = 'data'
-dataOutput = dataFolder + pathSeparator + 'daneelolivaw.csv'
-outputSeparator = '\t'
-data = 'N° d\'inventaire' + outputSeparator + 'Chemin' + outputSeparator + 'Fichier' + outputSeparator + 'Fonds' + outputSeparator + 'Sous-fonds' + outputSeparator + 'Dossier' + outputSeparator + 'Sous-dossier' + outputSeparator + 'Langue' + outputSeparator + 'Sujet' + outputSeparator + 'Article' + outputSeparator + 'N° (série)' + outputSeparator + 'Extension' + '\n'
+path_separator = '/'
+log_folder = 'log'
+log_file = log_folder + path_separator + 'daneelolivaw.log'
+log_level = logging.DEBUG
+results_folder = 'results'
+csv_file = results_folder + path_separator + 'daneelolivaw.csv'
+csv_separator = '\t'
+csv_data = ''
+html_data = ''
 recordsbyid = {}
 id = 0
 
@@ -25,8 +26,8 @@ id = 0
 # Programm
 #
 def main(recordsbyid) :
-	global data
-	logging.basicConfig(filename = logFile, filemode = 'w', format = '%(asctime)s  |  %(levelname)s  |  %(message)s', datefmt = '%m/%d/%Y %I:%M:%S %p', level = logLevel)
+	global csv_data
+	logging.basicConfig(filename = log_file, filemode = 'w', format = '%(asctime)s  |  %(levelname)s  |  %(message)s', datefmt = '%m/%d/%Y %I:%M:%S %p', level = log_level)
 	logging.info('Start')
 	# If specified, open the quality control sheet to list the documents
 	logging.info('Open quality control sheet')
@@ -37,13 +38,16 @@ def main(recordsbyid) :
 			recordsbyid = dict(zip(map(operator.itemgetter(0), t), t))
 	# Start inventory on the main folder
 	inventory(inventoryPath, recordsbyid)
-	# Write the results into data file
-	writeFile(data)
+	# Write the results into data files
+	writeCsvFile(csv_data)
+	# TODO replace it
+	html_data = 'LALILOU'
+	writeHtmlFile(html_data)
 	logging.info('End')
 
 def inventory(path, recordsbyid) :
 	global id
-	global data
+	global csv_data
 	# Iterate over each folder and file from path
 	for file in os.listdir(path) :
 		completePath = os.path.join(path, file)
@@ -72,8 +76,9 @@ def inventory(path, recordsbyid) :
 					try :
 						recordsbyid['_'.join(splitted_file[:9]).split('.')[0]]
 					except KeyError :
-						logging.info('Key error : the file ' + path + pathSeparator + file + ' doesn\'t exist in the quality control sheet.')
-				data += "%04d" % (id) + outputSeparator + path + outputSeparator + file + outputSeparator + collection + outputSeparator + subcollection + outputSeparator + folder + outputSeparator + subfolder + outputSeparator + lang + outputSeparator + subject + outputSeparator + article + outputSeparator + rank + outputSeparator + extension + '\n'
+						logging.info('Key error : the file ' + path + path_separator + file + ' doesn\'t exist in the quality control sheet.')
+				# csv_data += "%04d" % (id) + csv_separator + path + csv_separator + file + csv_separator + collection + csv_separator + subcollection + csv_separator + folder + csv_separator + subfolder + csv_separator + lang + csv_separator + subject + csv_separator + article + csv_separator + rank + csv_separator + extension + '\n'
+				csv_data += csv_separator.join(['%04d' % (id), path, file, collection, subcollection, folder, subfolder, lang, subject, article, rank, extension])
 			# Else write a log
 			else :
 				logging.error('File not conforme : ' + path + file)
@@ -81,11 +86,24 @@ def inventory(path, recordsbyid) :
 		else :
 			inventory(completePath, recordsbyid)
 
-def writeFile(data) :
-	# Write results into data file
-	with codecs.open(dataOutput, 'w', 'utf8') as f:
+def writeCsvFile(data) :
+	# Add csv headers
+	csv_headers = ['N° d\'inventaire', 'Chemin', 'Fichier', 'Fonds', 'Sous-fonds', 'Dossier', 'Sous-dossier', 'Langue', 'Sujet', 'Article', 'N° (série)', 'Extension']
+	data = csv_separator.join(csv_headers) + data
+	# Write results into a csv data file
+	with codecs.open(csv_file, 'w', 'utf8') as f:
 		f.write(data.decode('utf8'))
 	f.close()
+
+def writeHtmlFile(data) :
+	# Write results into an html data file
+	prefix = '<html><body>'
+	suffix = '</body></html>'
+	data = prefix + data + suffix
+	print data
+	# f = open('workfile', 'w')
+	# f.write(data)
+	# f.close()
 
 #
 # Main
@@ -108,9 +126,9 @@ if __name__ == '__main__':
 			else :
 				hasControlSheet = 0
 			# Check that log folder exists, else create it
-			if not os.path.exists(logFolder):
-				os.makedirs(logFolder)
+			if not os.path.exists(log_folder):
+				os.makedirs(log_folder)
 			# Check that data folder exists, else create it
-			if not os.path.exists(dataFolder):
-				os.makedirs(dataFolder)
+			if not os.path.exists(results_folder):
+				os.makedirs(results_folder)
 			main(recordsbyid)
