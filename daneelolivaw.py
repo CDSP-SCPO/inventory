@@ -5,7 +5,7 @@
 #
 # Libs
 #
-import codecs, csv, logging, operator, os, sys
+import codecs, csv, json, logging, operator, os, sys
 
 #
 # Config
@@ -18,7 +18,8 @@ results_folder = 'results'
 csv_file = results_folder + path_separator + 'daneelolivaw.csv'
 csv_separator = '\t'
 csv_data = ''
-html_data = ''
+json_file = results_folder + path_separator + 'daneelolivaw.json'
+json_data = {}
 recordsbyid = {}
 id = 0
 
@@ -27,6 +28,7 @@ id = 0
 #
 def main(recordsbyid) :
 	global csv_data
+	global json_data
 	logging.basicConfig(filename = log_file, filemode = 'w', format = '%(asctime)s  |  %(levelname)s  |  %(message)s', datefmt = '%m/%d/%Y %I:%M:%S %p', level = log_level)
 	logging.info('Start')
 	# If specified, open the quality control sheet to list the documents
@@ -40,14 +42,13 @@ def main(recordsbyid) :
 	inventory(inventoryPath, recordsbyid)
 	# Write the results into data files
 	writeCsvFile(csv_data)
-	# TODO replace it
-	html_data = 'LALILOU'
-	writeHtmlFile(html_data)
+	writeJsonFile(json_data)
 	logging.info('End')
 
 def inventory(path, recordsbyid) :
 	global id
 	global csv_data
+	global json_data
 	# Iterate over each folder and file from path
 	for file in os.listdir(path) :
 		completePath = os.path.join(path, file)
@@ -77,8 +78,14 @@ def inventory(path, recordsbyid) :
 						recordsbyid['_'.join(splitted_file[:9]).split('.')[0]]
 					except KeyError :
 						logging.info('Key error : the file ' + path + path_separator + file + ' doesn\'t exist in the quality control sheet.')
-				# csv_data += "%04d" % (id) + csv_separator + path + csv_separator + file + csv_separator + collection + csv_separator + subcollection + csv_separator + folder + csv_separator + subfolder + csv_separator + lang + csv_separator + subject + csv_separator + article + csv_separator + rank + csv_separator + extension + '\n'
-				csv_data += csv_separator.join(['%04d' % (id), path, file, collection, subcollection, folder, subfolder, lang, subject, article, rank, extension])
+				csv_data += csv_separator.join(['%04d' % (id), path, file, collection, subcollection, folder, subfolder, lang, subject, article, rank, extension]) + '\n'
+				if not file.split('_')[3] in json_data.keys() :
+					json_data[file.split('_')[3]] = {}
+				if not file.split('_')[4] in json_data[file.split('_')[3]] :
+					json_data[file.split('_')[3]][file.split('_')[4]] = {}
+				if not file.split('_')[5] in json_data[file.split('_')[3]][file.split('_')[4]] :
+					json_data[file.split('_')[3]][file.split('_')[4]][file.split('_')[5]] = []
+				json_data[file.split('_')[3]][file.split('_')[4]][file.split('_')[5]].append(file)
 			# Else write a log
 			else :
 				logging.error('File not conforme : ' + path + file)
@@ -95,15 +102,11 @@ def writeCsvFile(data) :
 		f.write(data.decode('utf8'))
 	f.close()
 
-def writeHtmlFile(data) :
-	# Write results into an html data file
-	prefix = '<html><body>'
-	suffix = '</body></html>'
-	data = prefix + data + suffix
-	print data
-	# f = open('workfile', 'w')
-	# f.write(data)
-	# f.close()
+def writeJsonFile(data) :
+	# Write results into an json data file
+	with open(json_file, 'w') as f:
+		# json.dump(data, f, sort_keys=True, indent=4, separators=(',', ': '))
+		json.dump(data, f, indent=4, separators=(',', ': '))
 
 #
 # Main
