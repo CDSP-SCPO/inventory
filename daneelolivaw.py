@@ -12,13 +12,11 @@ import codecs, csv, json, logging, operator, os, sys
 #
 path_separator = '/'
 log_folder = 'log'
-log_file = log_folder + path_separator + 'daneelolivaw.log'
 log_level = logging.DEBUG
 results_folder = 'results'
 csv_file = results_folder + path_separator + 'daneelolivaw.csv'
 csv_separator = '\t'
 csv_data = ''
-json_file = results_folder + path_separator + 'daneelolivaw.json'
 json_data = {}
 recordsbyid = {}
 id = 0
@@ -29,6 +27,7 @@ id = 0
 def main(recordsbyid) :
 	global csv_data
 	global json_data
+	log_file = log_folder + path_separator + sys.argv[0].replace('.py', '.log')
 	logging.basicConfig(filename = log_file, filemode = 'w', format = '%(asctime)s  |  %(levelname)s  |  %(message)s', datefmt = '%m/%d/%Y %I:%M:%S %p', level = log_level)
 	logging.info('Start')
 	# If specified, open the quality control sheet to list the documents
@@ -104,6 +103,7 @@ def writeCsvFile(data) :
 
 def writeJsonFile(data) :
 	# Write results into an json data file
+	json_file = results_folder + path_separator + sys.argv[0].replace('.py', '.json')
 	with open(json_file, 'w') as f:
 		# json.dump(data, f, sort_keys=True, indent=4, separators=(',', ': '))
 		json.dump(data, f, indent=4, separators=(',', ': '))
