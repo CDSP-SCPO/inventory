@@ -120,7 +120,10 @@ if __name__ == '__main__':
 	else :
 		# Check that if the command line has a second argument, it is a csv file
 		if len(sys.argv) >= 3 and sys.argv[2][-4:] != '.csv' :
-			print 'The second argument ie. the quality control sheet has to be a csv file'
+			print 'The second argument ie. the quality control sheet has to be a CSV file'
+		# Check that if the command line has a third argument, it is an xml file
+		if len(sys.argv) >= 3 and sys.argv[2][-4:] != '.xml' :
+			print 'The third argument ie. the METS file has to be an XML file'
 		else :
 			inventoryPath = sys.argv[1]
 			if len(sys.argv) >= 3 :
