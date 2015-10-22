@@ -13,7 +13,7 @@ Daneelolivaw can be used with any system compatible with python 2.7 by invoking 
 
 The second argument ie. the quality control sheet is optional and has to be a csv file
 
-`python daneelolivaw.py path/to/folder/to/inventory path/to/the/quality/control/sheet.csv`
+`python daneelolivaw.py path/to/folder/to/inventory path/to/the/scanning/sheet.csv path/to/the/METS/file.xml`
 
 
 ## When to use it ?
