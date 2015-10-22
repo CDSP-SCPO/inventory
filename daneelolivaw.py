@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Execution example : python daneelolivaw.py path/to/folder/to/inventory path/to/the/quality/control/sheet.csv
+# Execution example : python daneelolivaw.py path/to/the/scanning/sheet.csv path/to/the/METS/file.xml
 
 #
 # Libs
@@ -74,7 +74,10 @@ def inventory(path, recordsbyid) :
 				if hasControlSheet :
 					# Check if the file was listed in the quality control sheet
 					try :
-						recordsbyid['_'.join(splitted_file[:9]).split('.')[0]]
+						file_data = recordsbyid['_'.join(splitted_file[:9]).split('.')[0]]
+						file_article_title = file_data[9]
+						file_view_number = file_data[15]
+						file_date = file_data[10]
 					except KeyError :
 						logging.info('Key error : the file ' + path + path_separator + file + ' doesn\'t exist in the quality control sheet.')
 				csv_data += csv_separator.join(['%04d' % (id), path, file, collection, subcollection, folder, subfolder, lang, subject, article, rank, extension]) + '\n'
@@ -84,7 +87,7 @@ def inventory(path, recordsbyid) :
 					json_data[file.split('_')[3]][file.split('_')[4]] = {}
 				if not file.split('_')[5] in json_data[file.split('_')[3]][file.split('_')[4]] :
 					json_data[file.split('_')[3]][file.split('_')[4]][file.split('_')[5]] = []
-				json_data[file.split('_')[3]][file.split('_')[4]][file.split('_')[5]].append(file)
+				json_data[file.split('_')[3]][file.split('_')[4]][file.split('_')[5]].append({'file' : file, 'date' : file_date, 'article_title' : file_article_title, 'view_number' : file_view_number, 'serie_number' : rank})
 			# Else write a log
 			else :
 				logging.error('File not conforme : ' + path + file)
@@ -105,8 +108,7 @@ def writeJsonFile(data) :
 	# Write results into an json data file
 	json_file = results_folder + path_separator + sys.argv[0].replace('.py', '.json')
 	with open(json_file, 'w') as f:
-		# json.dump(data, f, sort_keys=True, indent=4, separators=(',', ': '))
-		json.dump(data, f, indent=4, separators=(',', ': '))
+		json.dump(data, f, indent = 4, separators = (',', ': '), encoding = "utf-8", ensure_ascii = False)
 
 #
 # Main
@@ -122,7 +124,7 @@ if __name__ == '__main__':
 		if len(sys.argv) >= 3 and sys.argv[2][-4:] != '.csv' :
 			print 'The second argument ie. the quality control sheet has to be a CSV file'
 		# Check that if the command line has a third argument, it is an xml file
-		if len(sys.argv) >= 3 and sys.argv[2][-4:] != '.xml' :
+		if len(sys.argv) >= 4 and sys.argv[3][-4:] != '.xml' :
 			print 'The third argument ie. the METS file has to be an XML file'
 		else :
 			inventoryPath = sys.argv[1]
