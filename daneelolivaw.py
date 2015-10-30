@@ -91,26 +91,19 @@ def inventory(path, recordsbyid) :
 				csv_data += csv_separator.join(['%04d' % (id), path, file, collection, subcollection, folder, subfolder, lang, subject, article, rank, extension]) + '\n'
 				# Check that subcollection already exists or create it
 				if len(list((item for item in json_data if item['name'] == subcollection))) == 0 :
-					label = merged_dict[subcollection] if subcollection in merged_dict.keys() else ''
-					if label == '' :
-						logging.warning('There is no label for : ' + subcollection + '. Please complete the type_documents dictionaries.')
+					label = getLabel(subcollection, merged_dict)
 					json_data.append({'name' : subcollection, 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
 					txt_data += str(len(json_data)) + '. ' + label.encode('utf8') + ' [' + subcollection + ']\n'
 				tmp = (item for item in json_data if item['name'] == subcollection).next()
 				# Check that this folder already exists or create it
 				if len(list((item for item in tmp['values'] if item['name'] == folder))) == 0 :
-					label = merged_dict[folder] if folder in merged_dict.keys() else ''
-					if label == '' :
-						logging.warning('There is no label for : ' + folder + '. Please complete the type_documents dictionaries.')
 					label = getLabel(folder, merged_dict)
 					tmp['values'].append({'name' : folder, 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
 					txt_data += '\t' + str(len(tmp['values'])) + '. ' + label.encode('utf8') + ' [' + folder + ']\n'
 				tmp = (item for item in tmp['values'] if item['name'] == folder).next()
 				# Check that this folder already exists or create it
 				if len(list((item for item in tmp['values'] if item['name'] == subfolder))) == 0 :
-					label = merged_dict[subfolder] if subfolder in merged_dict.keys() else ''
-					if label == '' :
-						logging.warning('There is no label for : ' + subfolder + '. Please complete the type_documents dictionaries.')
+					label = getLabel(subfolder, merged_dict)
 					tmp['values'].append({'name' : subfolder, 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
 					txt_data += '\t\t' + str(len(tmp['values'])) + '. ' + label.encode('utf8') + ' [' + subfolder + ']\n'
 				tmp = (item for item in tmp['values'] if item['name'] == subfolder).next()
@@ -146,6 +139,14 @@ def writeTxtFile(data) :
 	with codecs.open(txt_file, 'w', 'utf8') as f:
 		f.write(data.decode('utf8'))
 	f.close()
+
+def getLabel(item, dictionnary) :
+	if item in dictionnary.keys() :
+		label = dictionnary[item]
+	else :
+		label = ''
+		logging.warning('There is no label for : ' + item + ' in this dictionnary.')
+	return label
 
 #
 # Main
