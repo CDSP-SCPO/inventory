@@ -14,9 +14,11 @@ path_separator = '/'
 log_folder = 'log'
 log_level = logging.DEBUG
 results_folder = 'results'
+# data_folder = 'data'
+# data_file = 'type_documents.csv'
 csv_separator = '\t'
 csv_data = ''
-json_data = {}
+json_data = []
 recordsbyid = {}
 id = 0
 
@@ -82,13 +84,20 @@ def inventory(path, recordsbyid) :
 					except KeyError :
 						logging.info('Key error : the file ' + path + path_separator + file + ' doesn\'t exist in the quality control sheet.')
 				csv_data += csv_separator.join(['%04d' % (id), path, file, collection, subcollection, folder, subfolder, lang, subject, article, rank, extension]) + '\n'
-				if not file.split('_')[3] in json_data.keys() :
-					json_data[file.split('_')[3]] = {}
-				if not file.split('_')[4] in json_data[file.split('_')[3]] :
-					json_data[file.split('_')[3]][file.split('_')[4]] = {}
-				if not file.split('_')[5] in json_data[file.split('_')[3]][file.split('_')[4]] :
-					json_data[file.split('_')[3]][file.split('_')[4]][file.split('_')[5]] = []
-				json_data[file.split('_')[3]][file.split('_')[4]][file.split('_')[5]].append({'file' : file, 'date' : file_date, 'article_title' : file_article_title, 'view_number' : file_view_number, 'serie_number' : rank})
+				# Check that this folder already exists or create it
+				if len(list((item for item in json_data if item['name'] == file.split('_')[3]))) == 0 :
+					json_data.append({'name' : file.split('_')[3], 'type' : 'folder', 'values' : []})
+				tmp = (item for item in json_data if item['name'] == file.split('_')[3]).next()
+				# Check that this folder already exists or create it
+				if len(list((item for item in tmp['values'] if item['name'] == file.split('_')[4]))) == 0 :
+					tmp['values'].append({'name' : file.split('_')[4], 'type' : 'folder', 'values' : []})
+				tmp = (item for item in tmp['values'] if item['name'] == file.split('_')[4]).next()
+				# Check that this folder already exists or create it
+				if len(list((item for item in tmp['values'] if item['name'] == file.split('_')[5]))) == 0 :
+					tmp['values'].append({'name' : file.split('_')[5], 'type' : 'folder', 'values' : []})
+				tmp = (item for item in tmp['values'] if item['name'] == file.split('_')[5]).next()
+				# Finally add this file
+				tmp['values'].append({'file' : file, 'date' : file_date, 'article_title' : file_article_title, 'view_number' : file_view_number, 'serie_number' : rank})
 			# Else write a log
 			else :
 				logging.error('File not conforme : ' + path + file)
@@ -138,7 +147,7 @@ if __name__ == '__main__':
 			# Check that log folder exists, else create it
 			if not os.path.exists(log_folder):
 				os.makedirs(log_folder)
-			# Check that data folder exists, else create it
+			# Check that results folder exists, else create it
 			if not os.path.exists(results_folder):
 				os.makedirs(results_folder)
 			main(recordsbyid)
