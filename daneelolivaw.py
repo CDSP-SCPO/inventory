@@ -91,19 +91,19 @@ def inventory(path, recordsbyid) :
 				csv_data += csv_separator.join(['%04d' % (id), path, file, collection, subcollection, folder, subfolder, lang, subject, article, rank, extension]) + '\n'
 				# Check that subcollection already exists or create it
 				if len(list((item for item in json_data if item['name'] == subcollection))) == 0 :
-					label = getLabel(subcollection, merged_dict)
+					label = getTranslation(subcollection, merged_dict)
 					json_data.append({'name' : subcollection, 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
 					txt_data += str(len(json_data)) + '. ' + label.encode('utf8') + ' [' + subcollection + ']\n'
 				tmp = (item for item in json_data if item['name'] == subcollection).next()
 				# Check that this folder already exists or create it
 				if len(list((item for item in tmp['values'] if item['name'] == folder))) == 0 :
-					label = getLabel(folder, merged_dict)
+					label = getTranslation(folder, merged_dict)
 					tmp['values'].append({'name' : folder, 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
 					txt_data += '\t' + str(len(tmp['values'])) + '. ' + label.encode('utf8') + ' [' + folder + ']\n'
 				tmp = (item for item in tmp['values'] if item['name'] == folder).next()
 				# Check that this folder already exists or create it
 				if len(list((item for item in tmp['values'] if item['name'] == subfolder))) == 0 :
-					label = getLabel(subfolder, merged_dict)
+					label = getTranslation(subfolder, merged_dict)
 					tmp['values'].append({'name' : subfolder, 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
 					txt_data += '\t\t' + str(len(tmp['values'])) + '. ' + label.encode('utf8') + ' [' + subfolder + ']\n'
 				tmp = (item for item in tmp['values'] if item['name'] == subfolder).next()
@@ -140,7 +140,7 @@ def writeTxtFile(data) :
 		f.write(data.decode('utf8'))
 	f.close()
 
-def getLabel(item, dictionnary) :
+def getTranslation(item, dictionnary) :
 	if item in dictionnary.keys() :
 		label = dictionnary[item]
 	else :
