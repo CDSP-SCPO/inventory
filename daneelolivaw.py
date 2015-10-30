@@ -20,6 +20,7 @@ my_data_file = data_folder + path_separator + 'type_documents_sp5.json'
 csv_separator = '\t'
 csv_data = ''
 json_data = []
+txt_data = ''
 recordsbyid = {}
 id = 0
 
@@ -29,6 +30,7 @@ id = 0
 def main(recordsbyid) :
 	global csv_data
 	global json_data
+	global txt_data
 	log_file = log_folder + path_separator + sys.argv[0].replace('.py', '.log')
 	logging.basicConfig(filename = log_file, filemode = 'w', format = '%(asctime)s  |  %(levelname)s  |  %(message)s', datefmt = '%m/%d/%Y %I:%M:%S %p', level = log_level)
 	logging.info('Start')
@@ -45,6 +47,7 @@ def main(recordsbyid) :
 	# Write the results into data files
 	writeCsvFile(csv_data)
 	writeJsonFile(json_data)
+	writeTxtFile(txt_data)
 	logging.info('End')
 	print 'Everything worked well !\nCSV and JSON files have been generated into \'' + results_folder + '\' folder.'
 
@@ -52,6 +55,7 @@ def inventory(path, recordsbyid) :
 	global id
 	global csv_data
 	global json_data
+	global txt_data
 	# Iterate over each folder and file from path
 	for file in os.listdir(path) :
 		complete_path = os.path.join(path, file)
@@ -85,29 +89,34 @@ def inventory(path, recordsbyid) :
 					except KeyError :
 						logging.info('Key error : the file ' + path + path_separator + file + ' doesn\'t exist in the quality control sheet.')
 				csv_data += csv_separator.join(['%04d' % (id), path, file, collection, subcollection, folder, subfolder, lang, subject, article, rank, extension]) + '\n'
-				# Check that this folder already exists or create it
-				if len(list((item for item in json_data if item['name'] == file.split('_')[3]))) == 0 :
-					label = merged_dict[file.split('_')[3]] if file.split('_')[3] in merged_dict.keys() else ''
+				# Check that subcollection already exists or create it
+				if len(list((item for item in json_data if item['name'] == subcollection))) == 0 :
+					label = merged_dict[subcollection] if subcollection in merged_dict.keys() else ''
 					if label == '' :
-						logging.warning('There is no label for : ' + file.split('_')[3] + '. Please complete the type_documents dictionaries.')
-					json_data.append({'name' : file.split('_')[3], 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
-				tmp = (item for item in json_data if item['name'] == file.split('_')[3]).next()
+						logging.warning('There is no label for : ' + subcollection + '. Please complete the type_documents dictionaries.')
+					json_data.append({'name' : subcollection, 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
+					txt_data += str(len(json_data)) + '. ' + label.encode('utf8') + ' [' + subcollection + ']\n'
+				tmp = (item for item in json_data if item['name'] == subcollection).next()
 				# Check that this folder already exists or create it
-				if len(list((item for item in tmp['values'] if item['name'] == file.split('_')[4]))) == 0 :
-					label = merged_dict[file.split('_')[4]] if file.split('_')[4] in merged_dict.keys() else ''
+				if len(list((item for item in tmp['values'] if item['name'] == folder))) == 0 :
+					label = merged_dict[folder] if folder in merged_dict.keys() else ''
 					if label == '' :
-						logging.warning('There is no label for : ' + file.split('_')[4] + '. Please complete the type_documents dictionaries.')
-					tmp['values'].append({'name' : file.split('_')[4], 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
-				tmp = (item for item in tmp['values'] if item['name'] == file.split('_')[4]).next()
+						logging.warning('There is no label for : ' + folder + '. Please complete the type_documents dictionaries.')
+					label = getLabel(folder, merged_dict)
+					tmp['values'].append({'name' : folder, 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
+					txt_data += '\t' + str(len(tmp['values'])) + '. ' + label.encode('utf8') + ' [' + folder + ']\n'
+				tmp = (item for item in tmp['values'] if item['name'] == folder).next()
 				# Check that this folder already exists or create it
-				if len(list((item for item in tmp['values'] if item['name'] == file.split('_')[5]))) == 0 :
-					label = merged_dict[file.split('_')[5]] if file.split('_')[5] in merged_dict.keys() else ''
+				if len(list((item for item in tmp['values'] if item['name'] == subfolder))) == 0 :
+					label = merged_dict[subfolder] if subfolder in merged_dict.keys() else ''
 					if label == '' :
-						logging.warning('There is no label for : ' + file.split('_')[4] + '. Please complete the type_documents dictionaries.')
-					tmp['values'].append({'name' : file.split('_')[5], 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
-				tmp = (item for item in tmp['values'] if item['name'] == file.split('_')[5]).next()
+						logging.warning('There is no label for : ' + subfolder + '. Please complete the type_documents dictionaries.')
+					tmp['values'].append({'name' : subfolder, 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
+					txt_data += '\t\t' + str(len(tmp['values'])) + '. ' + label.encode('utf8') + ' [' + subfolder + ']\n'
+				tmp = (item for item in tmp['values'] if item['name'] == subfolder).next()
 				# Finally add this file
-				tmp['values'].append({'file' : file, 'date' : file_date, 'article_title' : file_article_title, 'view_number' : file_view_number, 'serie_number' : rank})
+				tmp['values'].append({'file' : file, 'date' : file_date, 'article_title' : file_article_title, 'view_number' : file_view_number, 'serie_number' : rank, 'type' : 'file'})
+				txt_data += '\t\t\t' + file_article_title + ' (' + file_date + ') | ' + rank + ' | ' + file + '\n'
 			# Else write a log
 			else :
 				logging.error('File not conforme : ' + path + file)
@@ -130,6 +139,13 @@ def writeJsonFile(data) :
 	json_file = results_folder + path_separator + sys.argv[0].replace('.py', '.json')
 	with open(json_file, 'w') as f:
 		json.dump(data, f, indent = 4, separators = (',', ': '), encoding = "utf-8", ensure_ascii = False)
+
+def writeTxtFile(data) :
+	# Write results into a txt data file
+	txt_file = results_folder + path_separator + sys.argv[0].replace('.py', '.txt')
+	with codecs.open(txt_file, 'w', 'utf8') as f:
+		f.write(data.decode('utf8'))
+	f.close()
 
 #
 # Main
