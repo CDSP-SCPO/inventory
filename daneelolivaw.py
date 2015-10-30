@@ -14,8 +14,9 @@ path_separator = '/'
 log_folder = 'log'
 log_level = logging.DEBUG
 results_folder = 'results'
-# data_folder = 'data'
-# data_file = 'type_documents.csv'
+data_folder = 'data'
+data_file = data_folder + path_separator + 'type_documents.json'
+my_data_file = data_folder + path_separator + 'type_documents_sp5.json'
 csv_separator = '\t'
 csv_data = ''
 json_data = []
@@ -86,15 +87,24 @@ def inventory(path, recordsbyid) :
 				csv_data += csv_separator.join(['%04d' % (id), path, file, collection, subcollection, folder, subfolder, lang, subject, article, rank, extension]) + '\n'
 				# Check that this folder already exists or create it
 				if len(list((item for item in json_data if item['name'] == file.split('_')[3]))) == 0 :
-					json_data.append({'name' : file.split('_')[3], 'type' : 'folder', 'values' : []})
+					label = merged_dict[file.split('_')[3]] if file.split('_')[3] in merged_dict.keys() else ''
+					if label == '' :
+						logging.warning('There is no label for : ' + file.split('_')[3] + '. Please complete the type_documents dictionaries.')
+					json_data.append({'name' : file.split('_')[3], 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
 				tmp = (item for item in json_data if item['name'] == file.split('_')[3]).next()
 				# Check that this folder already exists or create it
 				if len(list((item for item in tmp['values'] if item['name'] == file.split('_')[4]))) == 0 :
-					tmp['values'].append({'name' : file.split('_')[4], 'type' : 'folder', 'values' : []})
+					label = merged_dict[file.split('_')[4]] if file.split('_')[4] in merged_dict.keys() else ''
+					if label == '' :
+						logging.warning('There is no label for : ' + file.split('_')[4] + '. Please complete the type_documents dictionaries.')
+					tmp['values'].append({'name' : file.split('_')[4], 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
 				tmp = (item for item in tmp['values'] if item['name'] == file.split('_')[4]).next()
 				# Check that this folder already exists or create it
 				if len(list((item for item in tmp['values'] if item['name'] == file.split('_')[5]))) == 0 :
-					tmp['values'].append({'name' : file.split('_')[5], 'type' : 'folder', 'values' : []})
+					label = merged_dict[file.split('_')[5]] if file.split('_')[5] in merged_dict.keys() else ''
+					if label == '' :
+						logging.warning('There is no label for : ' + file.split('_')[4] + '. Please complete the type_documents dictionaries.')
+					tmp['values'].append({'name' : file.split('_')[5], 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
 				tmp = (item for item in tmp['values'] if item['name'] == file.split('_')[5]).next()
 				# Finally add this file
 				tmp['values'].append({'file' : file, 'date' : file_date, 'article_title' : file_article_title, 'view_number' : file_view_number, 'serie_number' : rank})
@@ -150,4 +160,8 @@ if __name__ == '__main__':
 			# Check that results folder exists, else create it
 			if not os.path.exists(results_folder):
 				os.makedirs(results_folder)
+			# Read the type_documents dictionnary
+			type_documents = json.load(open(data_file))
+			my_type_documents = json.load(open(my_data_file))
+			merged_dict = {key: value for (key, value) in (type_documents.items() + my_type_documents.items())}
 			main(recordsbyid)
