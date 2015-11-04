@@ -92,13 +92,13 @@ def inventory(path, recordsbyid) :
 				# Check that subcollection already exists or create it
 				if len(list((item for item in json_data if item['name'] == subcollection))) == 0 :
 					label = getTranslation(subcollection, merged_dict)
-					json_data.append({'name' : subcollection, 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
+					json_data.append({'name' : subcollection.encode('utf8'), 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
 					txt_data += str(len(json_data)) + '. ' + label.encode('utf8') + ' [' + subcollection + ']\n'
 				tmp = (item for item in json_data if item['name'] == subcollection).next()
 				# Check that this folder already exists or create it
 				if len(list((item for item in tmp['values'] if item['name'] == folder))) == 0 :
 					label = getTranslation(folder, merged_dict)
-					tmp['values'].append({'name' : folder, 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
+					tmp['values'].append({'name' : folder.encode('utf8'), 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
 					txt_data += '\t' + str(len(tmp['values'])) + '. ' + label.encode('utf8') + ' [' + folder + ']\n'
 				tmp = (item for item in tmp['values'] if item['name'] == folder).next()
 				# Check that this folder already exists or create it
@@ -132,6 +132,7 @@ def writeJsonFile(data) :
 	json_file = results_folder + path_separator + sys.argv[0].replace('.py', '.json')
 	with open(json_file, 'w') as f:
 		json.dump(data, f, indent = 4, separators = (',', ': '), encoding = "utf-8", ensure_ascii = False)
+	f.close()
 
 def writeTxtFile(data) :
 	# Write results into a txt data file
