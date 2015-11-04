@@ -4,11 +4,16 @@
 .DS_Store
 
 #
-# Results folder
-#
-results
-
-#
 # Log folder
 #
 log
+
+#
+# Data folder
+#
+data
+
+#
+# Results folder
+#
+results
