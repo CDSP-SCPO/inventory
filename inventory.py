@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Execution example : python daneelolivaw.py path/to/folder/to/inventory path/to/the/scanning/sheet.csv path/to/the/METS/file.xml
+# Execution example : python inventory.py "path/to/folder/to/inventory" "path/to/the/quality/control/sheet.csv"
 
 #
 # Libs
@@ -36,9 +36,9 @@ def main(recordsbyid) :
 	logging.info('Start')
 	# If specified, open the quality control sheet to list the documents
 	logging.info('Open quality control sheet')
-	# Load scanning sheet if any
-	if has_scanning_sheet :
-		with open(control_sheet, 'rb') as csvfile:
+	# Load quality control sheet if any
+	if has_quality_control_sheet :
+		with open(quality_control_sheet, 'rb') as csvfile:
 			spamreader = csv.reader(csvfile, delimiter=',', quotechar='"')
 			t = [l for l in spamreader]
 			recordsbyid = dict(zip(map(operator.itemgetter(0), t), t))
@@ -80,7 +80,7 @@ def inventory(path, recordsbyid) :
 				else :
 					rank = ''
 				extension = file.split('.')[-1]
-				if has_scanning_sheet :
+				if has_quality_control_sheet :
 					# Check if the file was listed in the quality control sheet
 					try :
 						file_data = recordsbyid['_'.join(splitted_file[:9]).split('.')[0]]
@@ -89,6 +89,11 @@ def inventory(path, recordsbyid) :
 						file_date = file_data[10]
 					except KeyError :
 						logging.info('Key error : the file ' + path + path_separator + file + ' doesn\'t exist in the quality control sheet.')
+				else :
+					file_data = ''
+					file_article_title = ''
+					file_view_number = ''
+					file_date = ''
 				csv_data += csv_separator.join(['%04d' % (id), path, file, collection, subcollection, folder, subfolder, lang, subject, article, rank, extension]) + '\n'
 				# Check that subcollection already exists or create it
 				if len(list((item for item in json_data if item['name'] == subcollection))) == 0 :
@@ -122,21 +127,21 @@ def writeCsvFile(data) :
 	# Add csv headers
 	csv_headers = ['N° d\'inventaire', 'Chemin', 'Fichier', 'Fonds', 'Sous-fonds', 'Dossier', 'Sous-dossier', 'Langue', 'Sujet', 'Article', 'N° (série)', 'Extension']
 	data = csv_separator.join(csv_headers) + data
-	# Write results into a csv data file
+	# Write results into a CSV data file
 	csv_file = results_folder + path_separator + sys.argv[0].replace('.py', '.csv')
 	with codecs.open(csv_file, 'w', 'utf8') as f:
 		f.write(data.decode('utf8'))
 	f.close()
 
 def writeJsonFile(data) :
-	# Write results into an json data file
+	# Write results into a JSON data file
 	json_file = results_folder + path_separator + sys.argv[0].replace('.py', '.json')
 	with open(json_file, 'w') as f:
 		json.dump(data, f, indent = 4, separators = (',', ': '), encoding = "utf-8", ensure_ascii = False)
 	f.close()
 
 def writeTxtFile(data) :
-	# Write results into a txt data file
+	# Write results into a TXT data file
 	txt_file = results_folder + path_separator + sys.argv[0].replace('.py', '.txt')
 	with codecs.open(txt_file, 'w', 'utf8') as f:
 		f.write(data.decode('utf8'))
@@ -154,37 +159,28 @@ def getTranslation(item, dictionnary) :
 # Main
 #
 if __name__ == '__main__':
-	# Check that the command line has at least one argument
-	if len(sys.argv) < 2 :
+	# Check that the command line has at least 2 arguments
+	if len(sys.argv) < 2 or (len(sys.argv) >= 3 and sys.argv[2][-4:] != '.csv') :
 		print ''
 		print 'Arguments error'
-		print 'Correct usage : ' + sys.argv[0] + ' "path/to/folder/to/inventory" "path/to/the/quality/control/sheet.csv" "path/to/the/METS/file.xml"'
+		print 'Correct usage : ' + sys.argv[0] + ' "path/to/folder/to/inventory" "path/to/the/quality/control/sheet.csv"'
+		print 'The first argument ie. the path to inventory is mandatory and is the path to the folder to inventory'
 		print 'The second argument ie. the quality control sheet is optional and has to be a CSV file'
-		print 'The third argument ie. the METS file has to be an XML file'
 	else :
-		# Check that if the command line has a second argument, it is a csv file
-		if len(sys.argv) >= 3 and sys.argv[2][-4:] != '.csv' :
-			print ''
-			print 'The second argument ie. the quality control sheet has to be a CSV file'
-		# Check that if the command line has a third argument, it is an xml file
-		if len(sys.argv) >= 4 and sys.argv[3][-4:] != '.xml' :
-			print ''
-			print 'The third argument ie. the METS file has to be an XML file'
+		inventory_path = sys.argv[1]
+		if len(sys.argv) >= 3 :
+			has_quality_control_sheet = 1
+			quality_control_sheet = sys.argv[2]
 		else :
-			inventory_path = sys.argv[1]
-			if len(sys.argv) >= 3 :
-				has_scanning_sheet = 1
-				control_sheet = sys.argv[2]
-			else :
-				has_scanning_sheet = 0
-			# Check that log folder exists, else create it
-			if not os.path.exists(log_folder):
-				os.makedirs(log_folder)
-			# Check that results folder exists, else create it
-			if not os.path.exists(results_folder):
-				os.makedirs(results_folder)
-			# Read the type_documents dictionnary
-			type_documents = json.load(open(data_file))
-			my_type_documents = json.load(open(my_data_file))
-			merged_dict = {key: value for (key, value) in (type_documents.items() + my_type_documents.items())}
-			main(recordsbyid)
+			has_quality_control_sheet = 0
+		# Check that log folder exists, else create it
+		if not os.path.exists(log_folder):
+			os.makedirs(log_folder)
+		# Check that results folder exists, else create it
+		if not os.path.exists(results_folder):
+			os.makedirs(results_folder)
+		# Read the type_documents dictionnary
+		type_documents = json.load(open(data_file))
+		my_type_documents = json.load(open(my_data_file))
+		merged_dict = {key: value for (key, value) in (type_documents.items() + my_type_documents.items())}
+		main(recordsbyid)
