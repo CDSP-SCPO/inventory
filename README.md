@@ -6,6 +6,8 @@ Daneelolivaw can be used to inventory a folder with formatted files' names
 
 It can also be used to check the presence of all the files asked to the service provider by passing the quality control sheet as second argument
 
+## Former name
+daneelolivaw
 
 ## How to use it ?
 
