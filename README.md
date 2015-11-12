@@ -15,7 +15,7 @@ Inventory a folder with formatted files' names and generate a classification tre
 
 Inventory can be used with any system compatible with python 2.7 by invoking the command
 
-`python inventory.py path/to/folder/to/inventory`
+`python inventory.py "path/to/folder/to/inventory" "path/to/the/quality/control/sheet.csv"`
 
 
 ## What is the output ?
