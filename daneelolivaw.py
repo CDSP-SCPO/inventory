@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Execution example : python daneelolivaw.py path/to/the/scanning/sheet.csv path/to/the/METS/file.xml
+# Execution example : python daneelolivaw.py path/to/folder/to/inventory path/to/the/scanning/sheet.csv path/to/the/METS/file.xml
 
 #
 # Libs
@@ -49,7 +49,8 @@ def main(recordsbyid) :
 	writeJsonFile(json_data)
 	writeTxtFile(txt_data)
 	logging.info('End')
-	print 'Everything worked well !\nCSV and JSON files have been generated into \'' + results_folder + '\' folder.'
+	print ''
+	print 'Everything worked well !\nCSV, JSON and TXT files have been generated into \'' + results_folder + '\' folder.'
 
 def inventory(path, recordsbyid) :
 	global id
@@ -155,15 +156,19 @@ def getTranslation(item, dictionnary) :
 if __name__ == '__main__':
 	# Check that the command line has at least one argument
 	if len(sys.argv) < 2 :
+		print ''
 		print 'Arguments error'
-		print 'Correct usage : ' + sys.argv[0] + ' "path/to/folder/to/inventory" "path/to/the/quality/control/sheet.csv"'
-		print 'The second argument ie. the digitalization sheet is optional and has to be a csv file'
+		print 'Correct usage : ' + sys.argv[0] + ' "path/to/folder/to/inventory" "path/to/the/quality/control/sheet.csv" "path/to/the/METS/file.xml"'
+		print 'The second argument ie. the quality control sheet is optional and has to be a CSV file'
+		print 'The third argument ie. the METS file has to be an XML file'
 	else :
 		# Check that if the command line has a second argument, it is a csv file
 		if len(sys.argv) >= 3 and sys.argv[2][-4:] != '.csv' :
+			print ''
 			print 'The second argument ie. the quality control sheet has to be a CSV file'
 		# Check that if the command line has a third argument, it is an xml file
 		if len(sys.argv) >= 4 and sys.argv[3][-4:] != '.xml' :
+			print ''
 			print 'The third argument ie. the METS file has to be an XML file'
 		else :
 			inventory_path = sys.argv[1]
