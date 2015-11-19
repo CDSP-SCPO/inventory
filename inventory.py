@@ -17,6 +17,7 @@ results_folder = 'results'
 data_folder = 'data'
 data_file = data_folder + path_separator + 'type_documents.json'
 my_data_file = data_folder + path_separator + 'type_documents_sp5.json'
+file_name = 'classification_tree'
 csv_separator = '\t'
 csv_data = ''
 json_data = []
@@ -50,7 +51,7 @@ def main(recordsbyid) :
 	writeTxtFile(txt_data)
 	logging.info('End')
 	print ''
-	print 'Everything worked well !\nCSV, JSON and TXT files have been generated into \'' + results_folder + '\' folder.'
+	print 'Everything worked well !\nJSON and TXT files have been generated into \'' + results_folder + '\' folder.\nCSV file has been generated into the inventoried folder.'
 
 def inventory(path, recordsbyid) :
 	global id
@@ -127,22 +128,26 @@ def writeCsvFile(data) :
 	# Add csv headers
 	csv_headers = ['N° d\'inventaire', 'Chemin', 'Fichier', 'Fonds', 'Sous-fonds', 'Dossier', 'Sous-dossier', 'Langue', 'Sujet', 'Article', 'N° (série)', 'Extension', 'sp-dl', 'sp-ol']
 	data = csv_separator.join(csv_headers) + data
+	# Check that CSV folder exists, else create it
+	csv_folder = inventory_path + path_separator + 'add'
+	if not os.path.exists(csv_folder) :
+		os.makedirs(csv_folder)
+	csv_file = csv_folder + path_separator + file_name + '.csv'
 	# Write results into a CSV data file
-	csv_file = results_folder + path_separator + sys.argv[0].replace('.py', '.csv')
 	with codecs.open(csv_file, 'w', 'utf8') as f:
 		f.write(data.decode('utf8'))
 	f.close()
 
 def writeJsonFile(data) :
 	# Write results into a JSON data file
-	json_file = results_folder + path_separator + sys.argv[0].replace('.py', '.json')
+	json_file = results_folder + path_separator + file_name + '.json'
 	with open(json_file, 'w') as f:
 		json.dump(data, f, indent = 4, separators = (',', ': '), encoding = "utf-8", ensure_ascii = False)
 	f.close()
 
 def writeTxtFile(data) :
 	# Write results into a TXT data file
-	txt_file = results_folder + path_separator + sys.argv[0].replace('.py', '.txt')
+	txt_file = results_folder + path_separator + file_name + '.txt'
 	with codecs.open(txt_file, 'w', 'utf8') as f:
 		f.write(data.decode('utf8'))
 	f.close()
@@ -174,10 +179,10 @@ if __name__ == '__main__':
 		else :
 			has_quality_control_sheet = 0
 		# Check that log folder exists, else create it
-		if not os.path.exists(log_folder):
+		if not os.path.exists(log_folder) :
 			os.makedirs(log_folder)
 		# Check that results folder exists, else create it
-		if not os.path.exists(results_folder):
+		if not os.path.exists(results_folder) :
 			os.makedirs(results_folder)
 		# Read the type_documents dictionnary
 		type_documents = json.load(open(data_file))
