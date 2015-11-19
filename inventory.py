@@ -94,7 +94,7 @@ def inventory(path, recordsbyid) :
 					file_article_title = ''
 					file_view_number = ''
 					file_date = ''
-				csv_data += csv_separator.join(['%04d' % (id), path, file, collection, subcollection, folder, subfolder, lang, subject, article, rank, extension]) + '\n'
+				csv_data += csv_separator.join(['%04d' % (id), path, file, collection, subcollection, folder, subfolder, lang, subject, article, rank, extension, '', '']) + '\n'
 				# Check that subcollection already exists or create it
 				if len(list((item for item in json_data if item['name'] == subcollection))) == 0 :
 					label = getTranslation(subcollection, merged_dict)
@@ -125,7 +125,7 @@ def inventory(path, recordsbyid) :
 
 def writeCsvFile(data) :
 	# Add csv headers
-	csv_headers = ['N° d\'inventaire', 'Chemin', 'Fichier', 'Fonds', 'Sous-fonds', 'Dossier', 'Sous-dossier', 'Langue', 'Sujet', 'Article', 'N° (série)', 'Extension']
+	csv_headers = ['N° d\'inventaire', 'Chemin', 'Fichier', 'Fonds', 'Sous-fonds', 'Dossier', 'Sous-dossier', 'Langue', 'Sujet', 'Article', 'N° (série)', 'Extension', 'sp-dl', 'sp-ol']
 	data = csv_separator.join(csv_headers) + data
 	# Write results into a CSV data file
 	csv_file = results_folder + path_separator + sys.argv[0].replace('.py', '.csv')
