@@ -23,6 +23,7 @@ csv_data = ''
 json_data = []
 txt_data = ''
 recordsbyid = {}
+blacklist_extension = ['jp2', 'txt']
 id = 0
 
 #
@@ -95,28 +96,29 @@ def inventory(path, recordsbyid) :
 					file_article_title = ''
 					file_view_number = ''
 					file_date = ''
-				csv_data += csv_separator.join(['%04d' % (id), path, file, collection, subcollection, folder, subfolder, lang, subject, article, rank, extension, '', '']) + '\n'
-				# Check that subcollection already exists or create it
-				if len(list((item for item in json_data if item['name'] == subcollection))) == 0 :
-					label = getTranslation(subcollection, merged_dict)
-					json_data.append({'name' : subcollection.encode('utf8'), 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
-					txt_data += str(len(json_data)) + '. ' + label.encode('utf8') + ' [' + subcollection + ']\n'
-				tmp = (item for item in json_data if item['name'] == subcollection).next()
-				# Check that this folder already exists or create it
-				if len(list((item for item in tmp['values'] if item['name'] == folder))) == 0 :
-					label = getTranslation(folder, merged_dict)
-					tmp['values'].append({'name' : folder.encode('utf8'), 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
-					txt_data += '\t' + str(len(tmp['values'])) + '. ' + label.encode('utf8') + ' [' + folder + ']\n'
-				tmp = (item for item in tmp['values'] if item['name'] == folder).next()
-				# Check that this folder already exists or create it
-				if len(list((item for item in tmp['values'] if item['name'] == subfolder))) == 0 :
-					label = getTranslation(subfolder, merged_dict)
-					tmp['values'].append({'name' : subfolder, 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
-					txt_data += '\t\t' + str(len(tmp['values'])) + '. ' + label.encode('utf8') + ' [' + subfolder + ']\n'
-				tmp = (item for item in tmp['values'] if item['name'] == subfolder).next()
-				# Finally add this file
-				tmp['values'].append({'file' : file, 'date' : file_date, 'article_title' : file_article_title, 'view_number' : file_view_number, 'serie_number' : rank, 'type' : 'file'})
-				txt_data += '\t\t\t' + file_article_title + ' (' + file_date + ') | ' + rank + ' | ' + file + '\n'
+				if not extension in blacklist_extension :
+					csv_data += csv_separator.join(['%04d' % (id), path, file, collection, subcollection, folder, subfolder, lang, subject, article, rank, extension, '', '']) + '\n'
+					# Check that subcollection already exists or create it
+					if len(list((item for item in json_data if item['name'] == subcollection))) == 0 :
+						label = getTranslation(subcollection, merged_dict)
+						json_data.append({'name' : subcollection.encode('utf8'), 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
+						txt_data += str(len(json_data)) + '. ' + label.encode('utf8') + ' [' + subcollection + ']\n'
+					tmp = (item for item in json_data if item['name'] == subcollection).next()
+					# Check that this folder already exists or create it
+					if len(list((item for item in tmp['values'] if item['name'] == folder))) == 0 :
+						label = getTranslation(folder, merged_dict)
+						tmp['values'].append({'name' : folder.encode('utf8'), 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
+						txt_data += '\t' + str(len(tmp['values'])) + '. ' + label.encode('utf8') + ' [' + folder + ']\n'
+					tmp = (item for item in tmp['values'] if item['name'] == folder).next()
+					# Check that this folder already exists or create it
+					if len(list((item for item in tmp['values'] if item['name'] == subfolder))) == 0 :
+						label = getTranslation(subfolder, merged_dict)
+						tmp['values'].append({'name' : subfolder, 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
+						txt_data += '\t\t' + str(len(tmp['values'])) + '. ' + label.encode('utf8') + ' [' + subfolder + ']\n'
+					tmp = (item for item in tmp['values'] if item['name'] == subfolder).next()
+					# Finally add this file
+					tmp['values'].append({'file' : file, 'date' : file_date, 'article_title' : file_article_title, 'view_number' : file_view_number, 'serie_number' : rank, 'type' : 'file'})
+					txt_data += '\t\t\t' + file_article_title + ' (' + file_date + ') | ' + rank + ' | ' + file + '\n'
 			# Else write a log
 			else :
 				logging.error('File not conforme : ' + path + file)
