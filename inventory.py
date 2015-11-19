@@ -126,7 +126,7 @@ def inventory(path, recordsbyid) :
 
 def writeCsvFile(data) :
 	# Add csv headers
-	csv_headers = ['N° d\'inventaire', 'Chemin', 'Fichier', 'Fonds', 'Sous-fonds', 'Dossier', 'Sous-dossier', 'Langue', 'Sujet', 'Article', 'N° (série)', 'Extension', 'sp-dl', 'sp-ol']
+	csv_headers = ['N° d\'inventaire', 'Chemin', 'Fichier', 'Fonds', 'Sous-fonds', 'Dossier', 'Sous-dossier', 'Langue', 'Sujet', 'Article', 'N° (série)', 'Extension', 'download', 'online']
 	data = csv_separator.join(csv_headers) + data
 	# Check that CSV folder exists, else create it
 	csv_folder = inventory_path + path_separator + 'add'
