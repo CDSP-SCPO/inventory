@@ -43,7 +43,7 @@ def main(recordsbyid) :
 		with open(quality_control_sheet, 'rb') as csvfile:
 			spamreader = csv.reader(csvfile, delimiter=',', quotechar='"')
 			t = [l for l in spamreader]
-			recordsbyid = dict(zip(map(operator.itemgetter(0), t), t))
+			recordsbyid = dict(zip(map(operator.itemgetter(1), t), t))
 	# Start inventory on the main folder
 	inventory(inventory_path, recordsbyid)
 	# Write the results into data files
@@ -121,7 +121,7 @@ def inventory(path, recordsbyid) :
 					txt_data += '\t\t\t' + file_article_title + ' (' + file_date + ') | ' + rank + ' | ' + file + '\n'
 			# Else write a log
 			else :
-				logging.error('File not conforme : ' + path + file)
+				logging.error('File not conforme : ' + path + path_separator + file)
 		# If it is a folder, launch inventory on it
 		else :
 			inventory(complete_path, recordsbyid)
