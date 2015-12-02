@@ -192,7 +192,7 @@ if __name__ == '__main__':
 	if len(sys.argv) < 2 or (len(sys.argv) >= 3 and sys.argv[2][-4:] != '.csv') :
 		print ''
 		print 'Arguments error'
-		print 'Correct usage : ' + sys.argv[0] + ' "path/to/folder/to/inventory" "path/to/the/quality/control/sheet.csv"'
+		print 'Correct usage : python ' + sys.argv[0] + ' "path/to/folder/to/inventory" "path/to/the/quality/control/sheet.csv"'
 		print 'The first argument ie. the path to inventory is mandatory and is the path to the folder to inventory'
 		print 'The second argument ie. the quality control sheet is optional and has to be a CSV file'
 	else :
