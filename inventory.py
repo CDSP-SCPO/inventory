@@ -5,7 +5,7 @@
 #
 # Libs
 #
-import codecs, csv, json, logging, operator, os, sys
+import codecs, csv, json, logging, operator, os, re, sys
 
 #
 # Config
@@ -25,6 +25,16 @@ txt_data = ''
 recordsbyid = {}
 blacklist_extension = ['jp2', 'txt']
 id = 0
+
+#
+# Function
+#
+# Create a numerical sort
+def numericalSort(value):
+	numbers = re.compile(r'(\d+)')
+	parts = numbers.split(value)
+	parts[1::2] = map(int, parts[1::2])
+	return parts
 
 #
 # Programm
@@ -60,7 +70,7 @@ def inventory(path, recordsbyid) :
 	global json_data
 	global txt_data
 	# Iterate over each folder and file from path
-	for file in os.listdir(path) :
+	for file in sorted(os.listdir(path), key=numericalSort) :
 		complete_path = os.path.join(path, file)
 		# If it is a file
 		if os.path.isfile(complete_path) :
@@ -115,14 +125,22 @@ def inventory(path, recordsbyid) :
 						tmp['values'].append({'name' : subfolder, 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
 						txt_data += '\t\t' + str(len(tmp['values'])) + '. ' + label.encode('utf8') + ' [' + subfolder + ']\n'
 					tmp = (item for item in tmp['values'] if item['name'] == subfolder).next()
-					# Finally add this file
+					# Finally add this file to the classification tree
 					tmp['values'].append({'file' : file, 'date' : file_date, 'article_title' : file_article_title, 'view_number' : file_view_number, 'serie_number' : rank, 'type' : 'file'})
-					txt_data += '\t\t\t' + file_date
-					if file_article_title != '' :
-						txt_data += ' (' + file_article_title + ')'
-					if rank != '' :
-						txt_data += ' ' + rank
-					txt_data += '\n\t\t\t\t' + file + '\n'
+					if not '_transcr_' in file :
+						txt_data += '\t\t\t' + file_date
+						if file_article_title != '' :
+							txt_data += ' (' + file_article_title + ')'
+						if rank != '' :
+							txt_data += ' ' + rank
+						txt_data += '\n\t\t\t\t' + file + '\n'
+					elif '_transcr_' in file and extension == 'pdf' :
+						txt_data += '\t\t\t' + file_date
+						if file_article_title != '' :
+							txt_data += ' (' + file_article_title + ')'
+						if rank != '' :
+							txt_data += ' ' + rank
+						txt_data += '\n\t\t\t\t' + file + ' (Et versions .xml et .odt)' + '\n'
 			# Else write a log
 			else :
 				logging.error('File not conforme : ' + path + path_separator + file)
