@@ -90,6 +90,10 @@ def inventory(path, recordsbyid) :
 						file_view_number = file_data[15]
 						file_date = file_data[10]
 					except KeyError :
+						file_data = ''
+						file_article_title = ''
+						file_view_number = ''
+						file_date = ''
 						logging.info('Key error : the file ' + path + path_separator + file + ' doesn\'t exist in the quality control sheet.')
 				else :
 					file_data = ''
@@ -118,7 +122,12 @@ def inventory(path, recordsbyid) :
 					tmp = (item for item in tmp['values'] if item['name'] == subfolder).next()
 					# Finally add this file
 					tmp['values'].append({'file' : file, 'date' : file_date, 'article_title' : file_article_title, 'view_number' : file_view_number, 'serie_number' : rank, 'type' : 'file'})
-					txt_data += '\t\t\t' + file_article_title + ' (' + file_date + ') | ' + rank + ' | ' + file + '\n'
+					txt_data += '\t\t\t' + file_date
+					if file_article_title != '' :
+						txt_data += ' (' + file_article_title + ')'
+					if rank != '' :
+						txt_data += ' ' + rank
+					txt_data += '\n\t\t\t\t' + file + '\n'
 			# Else write a log
 			else :
 				logging.error('File not conforme : ' + path + path_separator + file)
@@ -129,7 +138,7 @@ def inventory(path, recordsbyid) :
 def writeCsvFile(data) :
 	# Add csv headers
 	csv_headers = ['N° d\'inventaire', 'Chemin', 'Fichier', 'Fonds', 'Sous-fonds', 'Dossier', 'Sous-dossier', 'Langue', 'Sujet', 'Article', 'N° (série)', 'Extension', 'download', 'online']
-	data = csv_separator.join(csv_headers) + data
+	data = csv_separator.join(csv_headers) + '\n' + data
 	# Check that CSV folder exists, else create it
 	csv_folder = inventory_path + path_separator + 'add'
 	if not os.path.exists(csv_folder) :
