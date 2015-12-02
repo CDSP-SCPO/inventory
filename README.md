@@ -10,6 +10,8 @@ daneelolivaw
 
 Inventory a folder with formatted files' names and generate a classification tree.
 
+.jp2 and .txt files are not inventoried.
+
 
 ## How to use it ?
 
