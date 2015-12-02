@@ -18,11 +18,14 @@ data_folder = 'data'
 data_file = data_folder + path_separator + 'type_documents.json'
 file_name = 'classification_tree'
 csv_separator = '\t'
-csv_data = ''
-json_data = []
-txt_data = ''
 recordsbyid = {}
 blacklist_extension = ['jp2', 'txt']
+current_folder = ''
+data = {
+	'csv' : {'prep' : '', 'col' : '', 'anal' : '', 'ana' : ''},
+	'json' : {'prep' : [], 'col' : [], 'anal' : [], 'ana' : []},
+	'txt' : {'prep' : '', 'col' : '', 'anal' : '', 'ana' : ''}
+}
 id = 0
 
 #
@@ -39,9 +42,7 @@ def numericalSort(value):
 # Programm
 #
 def main(recordsbyid) :
-	global csv_data
-	global json_data
-	global txt_data
+	global data
 	log_file = log_folder + path_separator + sys.argv[0].replace('.py', '.log')
 	logging.basicConfig(filename = log_file, filemode = 'w', format = '%(asctime)s  |  %(levelname)s  |  %(message)s', datefmt = '%m/%d/%Y %I:%M:%S %p', level = log_level)
 	logging.info('Start')
@@ -56,18 +57,17 @@ def main(recordsbyid) :
 	# Start inventory on the main folder
 	inventory(inventory_path, recordsbyid)
 	# Write the results into data files
-	writeCsvFile(csv_data)
-	writeJsonFile(json_data)
-	writeTxtFile(txt_data)
+	writeCsvFile(data)
+	writeJsonFile(data)
+	writeTxtFile(data)
 	logging.info('End')
 	print ''
 	print 'Everything worked well !\nJSON and TXT files have been generated into \'' + results_folder + '\' folder.\nCSV file has been generated into the inventoried folder.'
 
 def inventory(path, recordsbyid) :
 	global id
-	global csv_data
-	global json_data
-	global txt_data
+	global data
+	global current_folder
 	# Iterate over each folder and file from path
 	for file in sorted(os.listdir(path), key=numericalSort) :
 		complete_path = os.path.join(path, file)
@@ -105,52 +105,54 @@ def inventory(path, recordsbyid) :
 					except KeyError :
 						logging.info('Key error : the file ' + path + path_separator + file + ' doesn\'t exist in the quality control sheet.')
 				if not extension in blacklist_extension :
-					csv_data += csv_separator.join(['%04d' % (id), path, file, collection, subcollection, folder, subfolder, lang, subject, article, rank, extension, '', '']) + '\n'
+					data['csv'][current_folder] += csv_separator.join(['%04d' % (id), path, file, collection, subcollection, folder, subfolder, lang, subject, article, rank, extension, '', '']) + '\n'
 					# Check that subcollection already exists or create it
-					if len(list((item for item in json_data if item['name'] == subcollection))) == 0 :
+					if len(list((item for item in data['json'][current_folder] if item['name'] == subcollection))) == 0 :
 						label = getTranslation(subcollection, merged_dict)
-						json_data.append({'name' : subcollection.encode('utf8'), 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
-						txt_data += str(len(json_data)) + '. ' + label.encode('utf8') + ' [' + subcollection + ']\n'
-					tmp = (item for item in json_data if item['name'] == subcollection).next()
+						data['json'][current_folder].append({'name' : subcollection.encode('utf8'), 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
+						data['txt'][current_folder] += str(len(data['json'][current_folder])) + '. ' + label.encode('utf8') + ' [' + subcollection + ']\n'
+					tmp = (item for item in data['json'][current_folder] if item['name'] == subcollection).next()
 					# Check that this folder already exists or create it
 					if len(list((item for item in tmp['values'] if item['name'] == folder))) == 0 :
 						label = getTranslation(folder, merged_dict)
 						tmp['values'].append({'name' : folder.encode('utf8'), 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
-						txt_data += '\t' + str(len(tmp['values'])) + '. ' + label.encode('utf8') + ' [' + folder + ']\n'
+						data['txt'][current_folder] += '\t' + str(len(tmp['values'])) + '. ' + label.encode('utf8') + ' [' + folder + ']\n'
 					tmp = (item for item in tmp['values'] if item['name'] == folder).next()
 					# Check that this folder already exists or create it
 					if len(list((item for item in tmp['values'] if item['name'] == subfolder))) == 0 :
 						label = getTranslation(subfolder, merged_dict)
 						tmp['values'].append({'name' : subfolder, 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
-						txt_data += '\t\t' + str(len(tmp['values'])) + '. ' + label.encode('utf8') + ' [' + subfolder + ']\n'
+						data['txt'][current_folder] += '\t\t' + str(len(tmp['values'])) + '. ' + label.encode('utf8') + ' [' + subfolder + ']\n'
 					tmp = (item for item in tmp['values'] if item['name'] == subfolder).next()
 					# Finally add this file to the classification tree
 					tmp['values'].append({'file' : file, 'date' : file_date, 'article_title' : file_article_title, 'view_number' : file_view_number, 'serie_number' : rank, 'type' : 'file'})
 					if not '_transcr_' in file :
-						txt_data += '\t\t\t' + file_date
+						data['txt'][current_folder] += '\t\t\t' + file_date
 						if file_article_title != '' :
-							txt_data += ' (' + file_article_title + ')'
+							data['txt'][current_folder] += ' (' + file_article_title + ')'
 						if rank != '' :
-							txt_data += ' ' + rank
-						txt_data += '\n\t\t\t\t' + file + '\n'
+							data['txt'][current_folder] += ' ' + rank
+						data['txt'][current_folder] += '\n\t\t\t\t' + file + '\n'
 					elif '_transcr_' in file and extension == 'pdf' :
-						txt_data += '\t\t\t' + file_date
+						data['txt'][current_folder] += '\t\t\t' + file_date
 						if file_article_title != '' :
-							txt_data += ' (' + file_article_title + ')'
+							data['txt'][current_folder] += ' (' + file_article_title + ')'
 						if rank != '' :
-							txt_data += ' ' + rank
-						txt_data += '\n\t\t\t\t' + file + ' (Et versions .xml et .odt)' + '\n'
+							data['txt'][current_folder] += ' ' + rank
+						data['txt'][current_folder] += '\n\t\t\t\t' + file + ' (Et versions .xml et .odt)' + '\n'
 			# Else write a log
 			else :
 				logging.error('File not conforme : ' + path + path_separator + file)
 		# If it is a folder, launch inventory on it
 		else :
+			if file in data['csv'].keys() :
+				current_folder = file
 			inventory(complete_path, recordsbyid)
 
 def writeCsvFile(data) :
 	# Add csv headers
 	csv_headers = ['N° d\'inventaire', 'Chemin', 'Fichier', 'Fonds', 'Sous-fonds', 'Dossier', 'Sous-dossier', 'Langue', 'Sujet', 'Article', 'N° (série)', 'Extension', 'download', 'online']
-	data = csv_separator.join(csv_headers) + '\n' + data
+	data = csv_separator.join(csv_headers) + '\n' + data['csv']['prep'] + data['csv']['col'] + data['csv']['anal'] + data['csv']['ana']
 	# Check that CSV folder exists, else create it
 	csv_folder = inventory_path + path_separator + 'add'
 	if not os.path.exists(csv_folder) :
@@ -165,14 +167,18 @@ def writeJsonFile(data) :
 	# Write results into a JSON data file
 	json_file = results_folder + path_separator + file_name + '.json'
 	with open(json_file, 'w') as f:
-		json.dump(data, f, indent = 4, separators = (',', ': '), encoding = "utf-8", ensure_ascii = False)
+		json_data = data['json']['prep'] + data['json']['col'] + data['json']['anal'] + data['json']['ana']
+		json.dump(json_data, f, indent = 4, separators = (',', ': '), encoding = "utf-8", ensure_ascii = False)
 	f.close()
 
 def writeTxtFile(data) :
 	# Write results into a TXT data file
 	txt_file = results_folder + path_separator + file_name + '.txt'
 	with codecs.open(txt_file, 'w', 'utf8') as f:
-		f.write(data.decode('utf8'))
+		f.write(data['txt']['prep'].decode('utf8'))
+		f.write(data['txt']['col'].decode('utf8'))
+		f.write(data['txt']['anal'].decode('utf8'))
+		f.write(data['txt']['ana'].decode('utf8'))
 	f.close()
 
 def getTranslation(item, dictionnary) :
@@ -195,7 +201,7 @@ if __name__ == '__main__':
 		print 'The first argument ie. the path to inventory is mandatory and is the path to the folder to inventory'
 		print 'The second argument ie. the quality control sheet is optional and has to be a CSV file'
 	else :
-		# Dynamically get the project name to load the linked dictionnary
+		# Dynamically get the project name to load the linked dictionary
 		inventory_path = sys.argv[1]
 		inventory_path_splitted = inventory_path.split(path_separator)
 		inventory_folder = inventory_path_splitted[-1] if inventory_path_splitted[-1] != '' else inventory_path_splitted[-2]
