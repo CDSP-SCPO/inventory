@@ -16,7 +16,6 @@ log_level = logging.DEBUG
 results_folder = 'results'
 data_folder = 'data'
 data_file = data_folder + path_separator + 'type_documents.json'
-my_data_file = data_folder + path_separator + 'type_documents_s6.json'
 file_name = 'classification_tree'
 csv_separator = '\t'
 csv_data = ''
@@ -196,7 +195,11 @@ if __name__ == '__main__':
 		print 'The first argument ie. the path to inventory is mandatory and is the path to the folder to inventory'
 		print 'The second argument ie. the quality control sheet is optional and has to be a CSV file'
 	else :
+		# Dynamically get the project name to load the linked dictionnary
 		inventory_path = sys.argv[1]
+		inventory_path_splitted = inventory_path.split(path_separator)
+		inventory_folder = inventory_path_splitted[-1] if inventory_path_splitted[-1] != '' else inventory_path_splitted[-2]
+		survey_name = inventory_folder.split('_')[-1]
 		if len(sys.argv) >= 3 :
 			has_quality_control_sheet = 1
 			quality_control_sheet = sys.argv[2]
@@ -210,6 +213,7 @@ if __name__ == '__main__':
 			os.makedirs(results_folder)
 		# Read the type_documents dictionnary
 		type_documents = json.load(open(data_file))
+		my_data_file = data_folder + path_separator + 'type_documents_' + survey_name + '.json'
 		my_type_documents = json.load(open(my_data_file))
 		merged_dict = {key: value for (key, value) in (type_documents.items() + my_type_documents.items())}
 		main(recordsbyid)
