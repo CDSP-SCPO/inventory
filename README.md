@@ -10,7 +10,7 @@ daneelolivaw
 
 Inventory a folder with formatted files' names and generate a classification tree.
 
-.jp2 and .txt files are not inventoried.
+JP2 and TXT files are not inventoried (blacklist_extension array).
 
 
 ## How to use it ?
