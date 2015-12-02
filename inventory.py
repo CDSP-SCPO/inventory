@@ -82,6 +82,10 @@ def inventory(path, recordsbyid) :
 				else :
 					rank = ''
 				extension = file.split('.')[-1]
+				file_data = ''
+				file_article_title = ''
+				file_view_number = ''
+				file_date = ''
 				if has_quality_control_sheet :
 					# Check if the file was listed in the quality control sheet
 					try :
@@ -90,16 +94,7 @@ def inventory(path, recordsbyid) :
 						file_view_number = file_data[15]
 						file_date = file_data[10]
 					except KeyError :
-						file_data = ''
-						file_article_title = ''
-						file_view_number = ''
-						file_date = ''
 						logging.info('Key error : the file ' + path + path_separator + file + ' doesn\'t exist in the quality control sheet.')
-				else :
-					file_data = ''
-					file_article_title = ''
-					file_view_number = ''
-					file_date = ''
 				if not extension in blacklist_extension :
 					csv_data += csv_separator.join(['%04d' % (id), path, file, collection, subcollection, folder, subfolder, lang, subject, article, rank, extension, '', '']) + '\n'
 					# Check that subcollection already exists or create it
