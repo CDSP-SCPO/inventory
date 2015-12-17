@@ -69,7 +69,7 @@ def inventory(path, recordsbyid) :
 	global data
 	global current_folder
 	# Iterate over each folder and file from path
-	for file in sorted(os.listdir(path), key=numericalSort) :
+	for file in sorted(os.listdir(path), key = numericalSort) :
 		complete_path = os.path.join(path, file)
 		# If it is a file
 		if os.path.isfile(complete_path) :
@@ -110,7 +110,7 @@ def inventory(path, recordsbyid) :
 					if len(list((item for item in data['json'][current_folder] if item['name'] == subcollection))) == 0 :
 						label = getTranslation(subcollection, merged_dict)
 						data['json'][current_folder].append({'name' : subcollection.encode('utf8'), 'type' : 'folder', 'values' : [], 'label' : label.encode('utf8')})
-						data['txt'][current_folder] += str(len(data['json'][current_folder])) + '. ' + label.encode('utf8') + ' [' + subcollection + ']\n'
+						data['txt'][current_folder] += '. ' + label.encode('utf8') + ' [' + subcollection + ']\n'
 					tmp = (item for item in data['json'][current_folder] if item['name'] == subcollection).next()
 					# Check that this folder already exists or create it
 					if len(list((item for item in tmp['values'] if item['name'] == folder))) == 0 :
@@ -174,11 +174,20 @@ def writeJsonFile(data) :
 def writeTxtFile(data) :
 	# Write results into a TXT data file
 	txt_file = results_folder + path_separator + file_name + '.txt'
+	tmp = 0
 	with codecs.open(txt_file, 'w', 'utf8') as f:
-		f.write(data['txt']['prep'].decode('utf8'))
-		f.write(data['txt']['col'].decode('utf8'))
-		f.write(data['txt']['anal'].decode('utf8'))
-		f.write(data['txt']['ana'].decode('utf8'))
+		if data['txt']['prep'] != '' :
+			tmp += 1
+			f.write(str(tmp) + data['txt']['prep'].decode('utf8'))
+		if data['txt']['col'] != '' :
+			tmp += 1
+			f.write(str(tmp) + data['txt']['col'].decode('utf8'))
+		if data['txt']['anal'] != '' :
+			tmp += 1
+			f.write(str(tmp) + data['txt']['anal'].decode('utf8'))
+		if data['txt']['ana'] != '' :
+			tmp += 1
+			f.write(str(tmp) + data['txt']['ana'].decode('utf8'))
 	f.close()
 
 def getTranslation(item, dictionnary) :
