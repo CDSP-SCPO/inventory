@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Execution example : python inventory.py "path/to/folder/to/inventory" "path/to/the/quality/control/sheet.csv"
+# Execution example : python inventory.py "path/to/folder/to/inventory" "survey_name" "path/to/the/quality/control/sheet.csv"
 
 #
 # Libs
@@ -48,12 +48,14 @@ def main(recordsbyid) :
 	logging.info('Start')
 	# If specified, open the quality control sheet to list the documents
 	logging.info('Open quality control sheet')
+	recordsbyid = {}
 	# Load quality control sheet if any
 	if has_quality_control_sheet :
 		with open(quality_control_sheet, 'rb') as csvfile:
 			spamreader = csv.reader(csvfile, delimiter=',', quotechar='"')
-			t = [l for l in spamreader]
-			recordsbyid = dict(zip(map(operator.itemgetter(1), t), t))
+			for x in spamreader :
+				if len(x) == 16 :
+					recordsbyid[x[0]] = x
 	# Start inventory on the main folder
 	inventory(inventory_path, recordsbyid)
 	# Write the results into data files
@@ -174,20 +176,20 @@ def writeJsonFile(data) :
 def writeTxtFile(data) :
 	# Write results into a TXT data file
 	txt_file = results_folder + path_separator + file_name + '.txt'
-	tmp = 0
+	counter = 0
 	with codecs.open(txt_file, 'w', 'utf8') as f:
 		if data['txt']['prep'] != '' :
-			tmp += 1
-			f.write(str(tmp) + data['txt']['prep'].decode('utf8'))
+			counter += 1
+			f.write(str(counter) + data['txt']['prep'].decode('utf8'))
 		if data['txt']['col'] != '' :
-			tmp += 1
-			f.write(str(tmp) + data['txt']['col'].decode('utf8'))
+			counter += 1
+			f.write(str(counter) + data['txt']['col'].decode('utf8'))
 		if data['txt']['anal'] != '' :
-			tmp += 1
-			f.write(str(tmp) + data['txt']['anal'].decode('utf8'))
+			counter += 1
+			f.write(str(counter) + data['txt']['anal'].decode('utf8'))
 		if data['txt']['ana'] != '' :
-			tmp += 1
-			f.write(str(tmp) + data['txt']['ana'].decode('utf8'))
+			counter += 1
+			f.write(str(counter) + data['txt']['ana'].decode('utf8'))
 	f.close()
 
 def getTranslation(item, dictionnary) :
@@ -202,22 +204,23 @@ def getTranslation(item, dictionnary) :
 # Main
 #
 if __name__ == '__main__':
-	# Check that the command line has at least 2 arguments
-	if len(sys.argv) < 2 or (len(sys.argv) >= 3 and sys.argv[2][-4:] != '.csv') :
+	# Check that the command line has at least 3 arguments
+	if len(sys.argv) < 3 or (len(sys.argv) >= 4 and sys.argv[3][-4:] != '.csv') :
 		print ''
 		print 'Arguments error'
-		print 'Correct usage : python ' + sys.argv[0] + ' "path/to/folder/to/inventory" "path/to/the/quality/control/sheet.csv"'
+		print 'Correct usage : python ' + sys.argv[0] + ' "path/to/folder/to/inventory" "survey_name" "path/to/the/quality/control/sheet.csv"'
 		print 'The first argument ie. the path to inventory is mandatory and is the path to the folder to inventory'
-		print 'The second argument ie. the quality control sheet is optional and has to be a CSV file'
+		print 'The second argument ie. the name of the survey is mandatory and is used to match with the dedicated dictionary'
+		print 'The third argument ie. the quality control sheet is optional and has to be a CSV file'
 	else :
 		# Dynamically get the project name to load the linked dictionary
 		inventory_path = sys.argv[1]
 		inventory_path_splitted = inventory_path.split(path_separator)
 		inventory_folder = inventory_path_splitted[-1] if inventory_path_splitted[-1] != '' else inventory_path_splitted[-2]
-		survey_name = inventory_folder.split('_')[-1]
-		if len(sys.argv) >= 3 :
+		survey_name = sys.argv[2]
+		if len(sys.argv) >= 4 :
 			has_quality_control_sheet = 1
-			quality_control_sheet = sys.argv[2]
+			quality_control_sheet = sys.argv[3]
 		else :
 			has_quality_control_sheet = 0
 		# Check that log folder exists, else create it
