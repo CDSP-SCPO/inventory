@@ -54,8 +54,8 @@ def main(recordsbyid) :
 		with open(quality_control_sheet, 'rb') as csvfile:
 			spamreader = csv.reader(csvfile, delimiter=',', quotechar='"')
 			for x in spamreader :
-				if len(x) == 16 :
-					recordsbyid[x[0]] = x
+				if len(x) == 23 :
+					recordsbyid[x[1]] = x
 	# Start inventory on the main folder
 	inventory(inventory_path, recordsbyid)
 	# Write the results into data files
@@ -101,9 +101,9 @@ def inventory(path, recordsbyid) :
 					# Check if the file was listed in the quality control sheet
 					try :
 						file_data = recordsbyid['_'.join(splitted_file[:9]).split('.')[0]]
-						file_article_title = file_data[9]
-						file_view_number = file_data[15]
-						file_date = file_data[10]
+						file_article_title = file_data[10]
+						file_view_number = file_data[16]
+						file_date = file_data[11]
 					except KeyError :
 						logging.info('Key error : the file ' + path + path_separator + file + ' doesn\'t exist in the quality control sheet.')
 				if not extension in blacklist_extension :
@@ -129,9 +129,11 @@ def inventory(path, recordsbyid) :
 					# Finally add this file to the classification tree
 					tmp['values'].append({'file' : file, 'date' : file_date, 'article_title' : file_article_title, 'view_number' : file_view_number, 'serie_number' : rank, 'type' : 'file'})
 					if not '_transcr_' in file :
-						data['txt'][current_folder] += '\t\t\t' + file_date
+						data['txt'][current_folder] += '\t\t\t'
 						if file_article_title != '' :
-							data['txt'][current_folder] += ' (' + file_article_title + ')'
+							data['txt'][current_folder] += file_article_title
+						if file_date != '' :
+							data['txt'][current_folder] += ' (' + file_date + ')'
 						if rank != '' :
 							data['txt'][current_folder] += ' ' + rank
 						data['txt'][current_folder] += '\n\t\t\t\t' + file + '\n'
