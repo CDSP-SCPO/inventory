@@ -138,9 +138,10 @@ def inventory(path, recordsbyid) :
 							data['txt'][current_folder] += ' ' + rank
 						data['txt'][current_folder] += '\n\t\t\t\t' + file + '\n'
 					elif '_transcr_' in file and extension == 'pdf' :
-						data['txt'][current_folder] += '\t\t\t' + file_date
 						if file_article_title != '' :
-							data['txt'][current_folder] += ' (' + file_article_title + ')'
+							data['txt'][current_folder] += '\t\t\t' + file_article_title
+						if file_date != '' :
+							data['txt'][current_folder] += ' (' + file_date + ')'
 						if rank != '' :
 							data['txt'][current_folder] += ' ' + rank
 						data['txt'][current_folder] += '\n\t\t\t\t' + file + ' (Et versions .xml et .odt)' + '\n'
