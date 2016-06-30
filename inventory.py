@@ -21,10 +21,11 @@ csv_separator = '\t'
 recordsbyid = {}
 blacklist_extension = ['jp2', 'txt']
 current_folder = ''
+# List of the folder to inventory according to the format of the result file
 data = {
-	'csv' : {'prep' : '', 'col' : '', 'anal' : '', 'ana' : ''},
-	'json' : {'prep' : [], 'col' : [], 'anal' : [], 'ana' : []},
-	'txt' : {'prep' : '', 'col' : '', 'anal' : '', 'ana' : ''}
+	'csv' : {'pre' : '', 'col' : '', 'anal' : '', 'ana' : '', 'add' : ''},
+	'json' : {'pre' : [], 'col' : [], 'anal' : [], 'ana' : [], 'add' : []},
+	'txt' : {'pre' : '', 'col' : '', 'anal' : '', 'ana' : '', 'add' : ''}
 }
 id = 0
 
@@ -54,7 +55,7 @@ def main(recordsbyid) :
 		with open(quality_control_sheet, 'rb') as csvfile:
 			spamreader = csv.reader(csvfile, delimiter=',', quotechar='"')
 			for x in spamreader :
-				if len(x) == 23 :
+				if len(x) == 21 :
 					recordsbyid[x[1]] = x
 	# Start inventory on the main folder
 	inventory(inventory_path, recordsbyid)
@@ -157,7 +158,7 @@ def inventory(path, recordsbyid) :
 def writeCsvFile(data) :
 	# Add csv headers
 	csv_headers = ['N° d\'inventaire', 'Chemin', 'Fichier', 'Fonds', 'Sous-fonds', 'Dossier', 'Sous-dossier', 'Langue', 'Sujet', 'Article', 'N° (série)', 'Extension', 'download', 'online']
-	data = csv_separator.join(csv_headers) + '\n' + data['csv']['prep'] + data['csv']['col'] + data['csv']['anal'] + data['csv']['ana']
+	data = csv_separator.join(csv_headers) + '\n' + data['csv']['pre'] + data['csv']['col'] + data['csv']['anal'] + data['csv']['ana'] + data['csv']['add']
 	# Check that CSV folder exists, else create it
 	csv_folder = inventory_path + path_separator + 'add'
 	if not os.path.exists(csv_folder) :
@@ -172,7 +173,7 @@ def writeJsonFile(data) :
 	# Write results into a JSON data file
 	json_file = results_folder + path_separator + file_name + '.json'
 	with open(json_file, 'w') as f:
-		json_data = data['json']['prep'] + data['json']['col'] + data['json']['anal'] + data['json']['ana']
+		json_data = data['json']['pre'] + data['json']['col'] + data['json']['anal'] + data['json']['ana'] + data['json']['add']
 		json.dump(json_data, f, indent = 4, separators = (',', ': '), encoding = "utf-8", ensure_ascii = False)
 	f.close()
 
@@ -181,9 +182,9 @@ def writeTxtFile(data) :
 	txt_file = results_folder + path_separator + file_name + '.txt'
 	counter = 0
 	with codecs.open(txt_file, 'w', 'utf8') as f:
-		if data['txt']['prep'] != '' :
+		if data['txt']['pre'] != '' :
 			counter += 1
-			f.write(str(counter) + data['txt']['prep'].decode('utf8'))
+			f.write(str(counter) + data['txt']['pre'].decode('utf8'))
 		if data['txt']['col'] != '' :
 			counter += 1
 			f.write(str(counter) + data['txt']['col'].decode('utf8'))
@@ -193,6 +194,9 @@ def writeTxtFile(data) :
 		if data['txt']['ana'] != '' :
 			counter += 1
 			f.write(str(counter) + data['txt']['ana'].decode('utf8'))
+		if data['txt']['add'] != '' :
+			counter += 1
+			f.write(str(counter) + data['txt']['add'].decode('utf8'))
 	f.close()
 
 def getTranslation(item, dictionnary) :
@@ -235,6 +239,7 @@ if __name__ == '__main__':
 		# Read the type_documents dictionnary
 		type_documents = json.load(open(data_file))
 		my_data_file = data_folder + path_separator + 'type_documents_' + survey_name + '.json'
+		# TODO : Check if file exists
 		my_type_documents = json.load(open(my_data_file))
 		merged_dict = {key: value for (key, value) in (type_documents.items() + my_type_documents.items())}
 		main(recordsbyid)
